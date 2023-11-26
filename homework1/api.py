@@ -1,15 +1,15 @@
 import io
 import pickle
-from functools import cache
+from functools import cache, partial
 from typing import List
 
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, UploadFile
-from fastapi.openapi.models import Response
 from pydantic import BaseModel
 from sklearn.linear_model import ElasticNet
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from starlette.responses import StreamingResponse
 
 app = FastAPI()
 
@@ -56,7 +56,7 @@ def predict(df: pd.DataFrame) -> np.array:
     for column in ('mileage', 'max_power', 'engine'):
         df[column] = pd.to_numeric(df[column].str.partition(' ')[0], errors='coerce',
                                    downcast='float')
-    df = df.drop(columns='torque', errors='ignore')
+    df = df.drop(columns=['torque', 'name'], errors='ignore')
 
     # One-hot encoding
     categorical_columns = ['fuel', 'seller_type', 'transmission', 'owner', 'seats']
@@ -65,7 +65,7 @@ def predict(df: pd.DataFrame) -> np.array:
     df = pd.concat([df.drop(columns=categorical_columns), df_cat], axis=1)
 
     # scale
-    df = pd.DataFrame(get_scaler().fit_transform(df), columns=df.columns.tolist())
+    df = pd.DataFrame(get_scaler().transform(df), columns=df.columns.tolist())
     return get_model().predict(df)
 
 
@@ -79,7 +79,12 @@ def predict_item(item: Item) -> float:
 def predict_items(file: UploadFile):
     df = pd.read_csv(file.file)
     y_pred = predict(df)
+    y_pred = pd.DataFrame(y_pred, columns=['selling_price'])
     df = pd.concat([df, y_pred], axis=1)
     buf = io.BytesIO()
     df.to_csv(buf)
-    return Response(content=buf.getvalue())
+    buf.seek(0)
+    headers = {
+        'Content-Disposition': 'attachment; filename="result.csv"'
+    }
+    return StreamingResponse(iter(partial(buf.read, 8 * 2**10), b''), headers=headers)
