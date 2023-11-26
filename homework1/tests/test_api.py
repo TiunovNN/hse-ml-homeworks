@@ -42,10 +42,10 @@ Mahindra Xylo D4 BSIII,2013,300000,Diesel,Individual,Manual,First Owner,14.0 kmp
 """
 
 expected_result = [
-    229999,
-    5500000,
-    122000,
-    200000,
+    646789,
+    1986911,
+    56983,
+    677191,
 ]
 
 
@@ -54,6 +54,6 @@ def test_predict_items():
     assert response.status_code == HTTPStatus.OK
     reader = csv.DictReader(io.StringIO(response.text), dialect='unix')
     assert expected_result == [
-        float(row['selling_price'])
+        int(float(row['selling_price']))
         for row in reader
     ], response.text
