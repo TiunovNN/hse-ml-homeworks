@@ -1,0 +1,5 @@
+name,year,km_driven,fuel,seller_type,transmission,owner,mileage,engine,max_power,torque,seats
+Mahindra Xylo E4 BS IV,2010,168000,Diesel,Individual,Manual,First Owner,14.0 kmpl,2498 CC,112 bhp,260 Nm at 1800-2200 rpm,7.0
+BMW X4 M Sport X xDrive20d,2019,8500,Diesel,Dealer,Automatic,First Owner,16.78 kmpl,1995 CC,190 bhp,400Nm@ 1750-2500rpm,5.0
+Ambassador Grand 1500 DSZ BSIII,2008,60000,Diesel,Individual,Manual,Second Owner,12.8 kmpl,1995 CC,52 bhp,106Nm@ 2200rpm,5.0
+Mahindra Xylo D4 BSIII,2013,300000,Diesel,Individual,Manual,First Owner,14.0 kmpl,2498 CC,112 bhp,260 Nm at 1800-2200 rpm,8.0
