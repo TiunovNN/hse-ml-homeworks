@@ -1,17 +1,17 @@
 import io
 import pickle
+from contextlib import asynccontextmanager
 from functools import cache, partial
 from typing import List
 
 import numpy as np
 import pandas as pd
+import uvicorn as uvicorn
 from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 from sklearn.linear_model import ElasticNet
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from starlette.responses import StreamingResponse
-
-app = FastAPI()
 
 
 @cache
@@ -51,6 +51,17 @@ class Items(BaseModel):
     objects: List[Item]
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    get_model()
+    get_scaler()
+    get_encoder()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+
 def predict(df: pd.DataFrame) -> np.array:
     # Normalize
     for column in ('mileage', 'max_power', 'engine'):
@@ -82,9 +93,13 @@ def predict_items(file: UploadFile):
     y_pred = pd.DataFrame(y_pred, columns=['selling_price'])
     df = pd.concat([df, y_pred], axis=1)
     buf = io.BytesIO()
-    df.to_csv(buf)
+    df.to_csv(buf, index=False)
     buf.seek(0)
     headers = {
         'Content-Disposition': 'attachment; filename="result.csv"'
     }
-    return StreamingResponse(iter(partial(buf.read, 8 * 2**10), b''), headers=headers)
+    return StreamingResponse(iter(partial(buf.read, 8 * 2 ** 10), b''), headers=headers)
+
+
+if __name__ == '__main__':
+    uvicorn.run(app, host="0.0.0.0", port=80)
