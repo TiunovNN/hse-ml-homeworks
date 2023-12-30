@@ -3,3 +3,4 @@
 
 * [ДЗ1](homework1)
 * [ДЗ2](homework2/HW2_Logistic_regression.ipynb)
+* [ДЗ3](homework3/HW3_woodenML.ipynb)
